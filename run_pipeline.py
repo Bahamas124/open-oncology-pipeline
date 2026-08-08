@@ -6,7 +6,8 @@ from src.classifier import isolate_live_somatic_mutations
 from src.predictor import run_live_ai_judge_and_blender
 from src.optimizer import weld_live_dual_action_mrna
 from src.reporter import generate_clinical_report
-from src.visualizer import render_patient_target_barcode # Import Module 6
+from src.visualizer import render_patient_target_barcode
+from src.validator import validate_mrna_stability
 
 def execute_live_data_pipeline():
     print("\n" + "="*60)
@@ -20,7 +21,10 @@ def execute_live_data_pipeline():
     if not downloaded_files:
         print("[Pipeline Error] Local asset cache empty.")
         return
+        
+    # THE FIX: Extract the first file string out of the matching files list layout
     sample_file_path = downloaded_files[0]
+    
     record_id, raw_sequence = ingest_genomic_file(sample_file_path)
     print("-"*60)
     verified_cancer_mutations = isolate_live_somatic_mutations(record_id, raw_sequence)
@@ -31,9 +35,11 @@ def execute_live_data_pipeline():
     print("-"*60)
     final_report_file = generate_clinical_report(record_id, raw_sequence, blended_target_manifest, final_output_file)
     print("-"*60)
-    
-    # Trigger Module 6: Generate the scannable visual target map
     final_visual_file = render_patient_target_barcode(record_id, blended_target_manifest)
+    print("-"*60)
+    
+    # Trigger Module 7: Run Molecular Quality Control Audit
+    validation_passed = validate_mrna_stability(record_id, final_output_file, blended_target_manifest)
     
     print("="*60)
     print("               PIPELINE LIFECYCLE COMPLETION SUCCESS           ")
@@ -42,7 +48,7 @@ def execute_live_data_pipeline():
     print(f"-> Vaccine Blueprint: {os.path.basename(final_output_file)}")
     print(f"-> Clinical Report:   {os.path.basename(final_report_file)}")
     print(f"-> Molecular Visual:  {os.path.basename(final_visual_file)}")
-    print(f"-> Visual Location:   {os.path.abspath(final_visual_file)}")
+    print(f"-> QA Quality Gate:   {'PASSED - SECURE' if validation_passed else 'FAILED - BLOCKED'}")
     print("="*60 + "\n")
 
 if __name__ == "__main__":

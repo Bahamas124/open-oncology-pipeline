@@ -1,0 +1,7 @@
+﻿data/
+*.fasta
+*.vcf
+*.fastq
+__pycache__/
+*.pyc
+.env

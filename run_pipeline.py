@@ -9,7 +9,7 @@ from src.reporter import generate_clinical_report
 from src.visualizer import render_patient_target_barcode
 from src.validator import validate_mrna_stability
 from src.simulator import run_manufacturing_simulation
-from src.exporter import export_production_spec_sheet # Import Module 9
+from src.exporter import export_production_spec_sheet
 
 def execute_live_data_pipeline():
     print("\n" + "="*60)
@@ -24,7 +24,8 @@ def execute_live_data_pipeline():
         print("[Pipeline Error] Local asset cache empty.")
         return
         
-    sample_file_path = downloaded_files
+    # Fixed tracking array pointer extraction string layout
+    sample_file_path = downloaded_files[0]
     
     record_id, raw_sequence = ingest_genomic_file(sample_file_path)
     print("-"*60)
@@ -45,7 +46,6 @@ def execute_live_data_pipeline():
     sim_successful = run_manufacturing_simulation(record_id, validation_passed, blended_target_manifest)
     print("-"*60)
     
-    # Trigger Module 9: Compile Final Production Specification Sheet
     final_spec_file = export_production_spec_sheet(record_id, final_output_file, validation_passed)
     
     print("="*60)

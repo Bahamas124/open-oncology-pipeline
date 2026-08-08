@@ -8,7 +8,8 @@ from src.optimizer import weld_live_dual_action_mrna
 from src.reporter import generate_clinical_report
 from src.visualizer import render_patient_target_barcode
 from src.validator import validate_mrna_stability
-from src.simulator import run_manufacturing_simulation # Import Module 8
+from src.simulator import run_manufacturing_simulation
+from src.exporter import export_production_spec_sheet # Import Module 9
 
 def execute_live_data_pipeline():
     print("\n" + "="*60)
@@ -23,7 +24,7 @@ def execute_live_data_pipeline():
         print("[Pipeline Error] Local asset cache empty.")
         return
         
-    sample_file_path = downloaded_files[0]
+    sample_file_path = downloaded_files
     
     record_id, raw_sequence = ingest_genomic_file(sample_file_path)
     print("-"*60)
@@ -41,16 +42,20 @@ def execute_live_data_pipeline():
     validation_passed = validate_mrna_stability(record_id, final_output_file, blended_target_manifest)
     print("-"*60)
     
-    # Trigger Module 8: Run the Biomanufacturing Simulation
     sim_successful = run_manufacturing_simulation(record_id, validation_passed, blended_target_manifest)
+    print("-"*60)
+    
+    # Trigger Module 9: Compile Final Production Specification Sheet
+    final_spec_file = export_production_spec_sheet(record_id, final_output_file, validation_passed)
     
     print("="*60)
     print("               PIPELINE LIFECYCLE COMPLETION SUCCESS           ")
     print("="*60)
     print(f"-> Source Input:      Real NCBI Asset [{record_id}]")
     print(f"-> Vaccine Blueprint: {os.path.basename(final_output_file)}")
-    print(f"-> QA Quality Gate:   {'PASSED - SECURE' if validation_passed else 'FAILED - BLOCKED'}")
     print(f"-> Manufacturing Sim: {'SIMULATION READY - COST MODEL OPTIMIZED' if sim_successful else 'FAILED'}")
+    print(f"-> Production Spec:   {os.path.basename(final_spec_file)}")
+    print(f"-> Spec Sheet Loc:    {os.path.abspath(final_spec_file)}")
     print("="*60 + "\n")
 
 if __name__ == "__main__":

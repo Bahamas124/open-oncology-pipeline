@@ -8,6 +8,7 @@ from src.optimizer import weld_live_dual_action_mrna
 from src.reporter import generate_clinical_report
 from src.visualizer import render_patient_target_barcode
 from src.validator import validate_mrna_stability
+from src.simulator import run_manufacturing_simulation # Import Module 8
 
 def execute_live_data_pipeline():
     print("\n" + "="*60)
@@ -22,7 +23,6 @@ def execute_live_data_pipeline():
         print("[Pipeline Error] Local asset cache empty.")
         return
         
-    # THE FIX: Extract the first file string out of the matching files list layout
     sample_file_path = downloaded_files[0]
     
     record_id, raw_sequence = ingest_genomic_file(sample_file_path)
@@ -38,17 +38,19 @@ def execute_live_data_pipeline():
     final_visual_file = render_patient_target_barcode(record_id, blended_target_manifest)
     print("-"*60)
     
-    # Trigger Module 7: Run Molecular Quality Control Audit
     validation_passed = validate_mrna_stability(record_id, final_output_file, blended_target_manifest)
+    print("-"*60)
+    
+    # Trigger Module 8: Run the Biomanufacturing Simulation
+    sim_successful = run_manufacturing_simulation(record_id, validation_passed, blended_target_manifest)
     
     print("="*60)
     print("               PIPELINE LIFECYCLE COMPLETION SUCCESS           ")
     print("="*60)
     print(f"-> Source Input:      Real NCBI Asset [{record_id}]")
     print(f"-> Vaccine Blueprint: {os.path.basename(final_output_file)}")
-    print(f"-> Clinical Report:   {os.path.basename(final_report_file)}")
-    print(f"-> Molecular Visual:  {os.path.basename(final_visual_file)}")
     print(f"-> QA Quality Gate:   {'PASSED - SECURE' if validation_passed else 'FAILED - BLOCKED'}")
+    print(f"-> Manufacturing Sim: {'SIMULATION READY - COST MODEL OPTIMIZED' if sim_successful else 'FAILED'}")
     print("="*60 + "\n")
 
 if __name__ == "__main__":

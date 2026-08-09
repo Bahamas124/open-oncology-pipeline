@@ -1,0 +1,33 @@
+﻿name: Open-Oncology Pipeline Compliance Suite
+
+# Trigger the automated cloud validation on every push or pull request to the main branch
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  validate-and-test:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Check out the repository files
+      uses: actions/checkout@v4
+
+    - name: Initialize clean Python environment
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.12'
+        cache: 'pip'
+
+    - name: Ingest core biological dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+
+    - name: Execute master 9-stage local loop test run
+      run: python run_pipeline.py
+
+    - name: Run automated compliance quality gates
+      run: python -m unittest tests/test_pipeline.py

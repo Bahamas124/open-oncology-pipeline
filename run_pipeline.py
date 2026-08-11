@@ -11,9 +11,15 @@ from src.validator import validate_mrna_stability
 from src.simulator import run_manufacturing_simulation
 from src.exporter import export_production_spec_sheet
 from src.logger import log_pipeline_event
+from src.cleaner import purge_temporary_pipeline_caches
 
 def execute_live_data_pipeline():
     log_pipeline_event("switchboard", "info", "Initializing 9-Stage Open-Oncology Pipeline Execution Loop")
+    
+    # AUTOMATED RESILIENCE LAYER: Run the garbage collector BEFORE processing new patient assets
+    log_pipeline_event("switchboard", "info", "Executing pre-run system directory garbage collection sweep...")
+    purged_files = purge_temporary_pipeline_caches()
+    log_pipeline_event("switchboard", "info", f"Pre-run environment sweep completed. Files cleared: {purged_files}")
     
     if not auto_fetch_prostate_cancer_data():
         log_pipeline_event("switchboard", "error", "Database synchronization failed.")

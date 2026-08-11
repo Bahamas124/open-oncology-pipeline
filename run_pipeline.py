@@ -32,7 +32,8 @@ def execute_live_data_pipeline():
         log_pipeline_event("switchboard", "error", "Local asset cache empty.")
         return
         
-    sample_file_path = downloaded_files
+    # EXTRACT THE FIRST FILE STRING OUT OF THE MATCHING POOL LIST DIRECTLY
+    sample_file_path = downloaded_files[0]
     
     log_pipeline_event("switchboard", "info", f"Target file resolved: {sample_file_path}")
     record_id, raw_sequence = ingest_genomic_file(sample_file_path)

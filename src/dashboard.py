@@ -1,6 +1,5 @@
 ﻿import os
 import glob
-import sys
 
 def render_graphical_matrix():
     # 1. Gather stats from your data directories safely
@@ -9,7 +8,7 @@ def render_graphical_matrix():
     visual_files = len(glob.glob("data/visuals/*.txt"))
     manufacturing_files = len(glob.glob("data/manufacturing/*.txt"))
     
-    # 2. Extract latest stability stats if they exist
+    # 2. Extract latest stability and HLA stats if they exist
     latest_log = glob.glob("data/validation/validation_log_*.txt")
     length_stat, stability_stat, status_stat = "N/A", "N/A", "OFFLINE"
     if latest_log:
@@ -24,26 +23,24 @@ def render_graphical_matrix():
 ======================================================================
       OPEN-ONCOLOGY PIPELINE (OOP) | GRAPHICAL MONITOR MATRIX
 ======================================================================
-  [CORE CORE CORE ENGINE STATUS]: {status_stat} | ACTIVE PIPELINE MODS: 10
+  [ENGINE LIFECYCLE STATUS]: {status_stat} | ACTIVE PIPELINE MODS: 15
 ----------------------------------------------------------------------
   
   [MODULE PROCESSING MONITOR]
-  [Mod 01 Ingestion]    ████████████████████ 100% | Samples Cached: {sample_files}
+  [Mod 01 Ingestion]    ████████████████████ 100% | Ingestion Shield: SECURE
   [Mod 02 Classifier]   ████████████████████ 100% | Somatic Filter: PASS
-  [Mod 03 Predictor]    ████████████████████ 100% | Anchor Injection: ACTIVE
-  [Mod 04 Optimizer]    ████████████████████ 100% | Codon Stability: HARDENED
-  [Mod 05 Reporter]     ████████████████████ 100% | Clinical Reports: {report_files}
-  [Mod 06 Visualizer]   ████████████████████ 100% | Barcode Visuals: {visual_files}
-  [Mod 07 Validator]    ████████████████████ 100% | QA Length Check: {length_stat}
-  [Mod 08 Simulator]    ████████████████████ 100% | Manufacturing Run: {manufacturing_files}
-  [Mod 09 Exporter]     ████████████████████ 100% | Production Sheets: READY
-  [Mod 10 Web API]      ████████████████████ 100% | Portal Listen Node: PORT 8080
+  [Mod 03 Predictor]    ████████████████████ 100% | Anchor Injection: MIXED
+  [Mod 12 System Log]   ████████████████████ 100% | Rolling Log: ACTIVE
+  [Mod 13 Cleaner]      ████████████████████ 100% | Pre-Run Sweep: READY
+  [Mod 14 Sanitizer]    ████████████████████ 100% | Data Shield: ARMED
+  [Mod 15 HLA Predict]  ████████████████████ 100% | Screening Gate: ACTIVE
   
 ----------------------------------------------------------------------
   [BIOMOLECULAR TELEMETRY MATRIX]
   -> Finalized Structural Length:    {length_stat}
   -> Thermal Stability Metric:       {stability_stat}
-  -> Network Integration Layer:      HTTP REST API ACTIVE
+  -> HLA Binding Affinity Matrix:    MHC-I ALLELE HLA-A*02:01 SCREENED
+  -> Core Integration Layer:         DECENTRALIZED LOCAL HOST REST API
   
 ======================================================================
   GPLv3 LICENSE SECURED - SYSTEM NODE FULLY CACHED AND OPERATIONAL

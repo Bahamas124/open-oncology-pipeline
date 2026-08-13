@@ -13,10 +13,11 @@ from src.exporter import export_production_spec_sheet
 from src.logger import log_pipeline_event
 from src.cleaner import purge_temporary_pipeline_caches
 from src.sanitizer import sanitize_genomic_sequence
+from src.hla_predictor import evaluate_hla_binding_affinity
 
 def execute_live_data_pipeline():
-    print("\\n" + "="*60)
-    log_pipeline_event("switchboard", "info", "Initializing 9-Stage Open-Oncology Pipeline Execution Loop")
+    print("\n" + "="*60)
+    log_pipeline_event("switchboard", "info", "Initializing Open-Oncology Pipeline Execution Loop")
     
     log_pipeline_event("switchboard", "info", "Executing pre-run system directory garbage collection sweep...")
     purged_files = purge_temporary_pipeline_caches()
@@ -32,21 +33,21 @@ def execute_live_data_pipeline():
         log_pipeline_event("switchboard", "error", "Local asset cache empty.")
         return
         
-    # EXTRACT THE FIRST FILE STRING OUT OF THE MATCHING POOL LIST DIRECTLY
+    # Fixed direct index extraction to prevent array list mismatches
     sample_file_path = downloaded_files[0]
     
     log_pipeline_event("switchboard", "info", f"Target file resolved: {sample_file_path}")
     record_id, raw_sequence = ingest_genomic_file(sample_file_path)
     log_pipeline_event("ingestion", "success", f"Ingested ID {record_id} successfully.")
     
-    # RUN THE DATA SHIELD UPFRONT
     sanitized_sequence = sanitize_genomic_sequence(raw_sequence)
-    
     verified_cancer_mutations = isolate_live_somatic_mutations(record_id, sanitized_sequence)
     log_pipeline_event("classifier", "success", "Somatic variations isolated.")
     
-    blended_target_manifest = run_live_ai_judge_and_blender(verified_cancer_mutations)
-    log_pipeline_event("predictor", "success", "Universal BPH anchors blended.")
+    raw_target_manifest = run_live_ai_judge_and_blender(verified_cancer_mutations)
+    
+    # Run Module 15 Immunological Affinity Screening Gate
+    blended_target_manifest = evaluate_hla_binding_affinity(raw_target_manifest)
     
     final_output_file = weld_live_dual_action_mrna(blended_target_manifest, record_id)
     log_pipeline_event("optimizer", "success", "Stabilized mRNA blueprint synthesized.")
@@ -68,7 +69,7 @@ def execute_live_data_pipeline():
     log_pipeline_event("exporter", "success", "Final manufacturing-ready production specification deliverables compiled.")
     
     log_pipeline_event("switchboard", "success", f"Pipeline lifecycle fully completed for patient record: {record_id}")
-    print("="*60 + "\\n")
+    print("="*60 + "\n")
 
 if __name__ == "__main__":
     execute_live_data_pipeline()

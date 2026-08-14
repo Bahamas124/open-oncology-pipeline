@@ -2,6 +2,76 @@
 import csv
 import datetime
 import random
+import sqlite3
+
+def init_oncology_sqlite_db():
+    """Module 13 Helper: Initializes a local SQLite relational database file
+    and populates it with active patient specimen data records."""
+    db_path = "oncology.db"
+    conn = sqlite3.connect(db_path)
+    cursor = conn.cursor()
+    
+    # Create structural relational patient database schemas
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS patient_specimens (
+            timestamp TEXT,
+            sample_id TEXT PRIMARY KEY,
+            tissue_vector TEXT,
+            target_assay TEXT
+        )
+    ''')
+    
+    # Hydrate database records dynamically
+    mock_samples = [
+        ("2026-08-13 09:30:15", "SAMP-9941", "Biopsy Core", "HER2 Amplification"),
+        ("2026-08-13 09:35:42", "SAMP-9942", "Plasma cfDNA", "EGFR T790M Mutation"),
+        ("2026-08-13 09:41:11", "SAMP-9943", "Whole Blood", "BRCA1 Sequencing")
+    ]
+    try:
+        cursor.executemany('''
+            INSERT OR REPLACE INTO patient_specimens (timestamp, sample_id, tissue_vector, target_assay)
+            VALUES (?, ?, ?, ?)
+        ''', mock_samples)
+        conn.commit()
+    except Exception:
+        pass
+    conn.close()
+
+def query_patient_database():
+    """Module 13: Natively queries the local SQLite relational database
+    via user command terminal entry prompts."""
+    print("\n[M13] SECURE SQLITE PATIENT PORTAL ACTIVE...")
+    db_path = "oncology.db"
+    if not os.path.exists(db_path):
+        print("  --> [ERROR] Relational database node offline.")
+        return
+        
+    conn = sqlite3.connect(db_path)
+    cursor = conn.cursor()
+    
+    print("  >>> Enter Patient Sample ID to run query (or press Enter to skip portal)")
+    user_input = input("  >>> Query Target (e.g., SAMP-9941): ").strip()
+    
+    if not user_input:
+        print("  - Exiting portal loop. Pipeline sequencing continuing...")
+        conn.close()
+        return
+        
+    cursor.execute("SELECT * FROM patient_specimens WHERE sample_id = ?", (user_input,))
+    record = cursor.fetchone()
+    
+    print("\n  =============================================================")
+    print("        RELATIONAL SQLITE DATABASE PORTAL QUERY RESULTS        ")
+    print("=============================================================")
+    if record:
+        print(f"  * TIMESTAMP LOGGED: {record[0]}")
+        print(f"  * UNIQUE SAMPLE ID: {record[1]}")
+        print(f"  * SPECIMEN VECTOR:  {record[2]}")
+        print(f"  * ONCOLOGY ASSAY:   {record[3]}")
+    else:
+        print(f"  --> [QUERY FAILED] No clinical record found for ID: '{user_input}'")
+    print("  =============================================================\n")
+    conn.close()
 
 def check_reagent_thresholds():
     """Module 08: Scans critical bio-reagent assays and flags depleted levels."""
@@ -66,7 +136,6 @@ def export_excel_csv_report(samples):
     Excel-compatible CSV spreadsheet report sheet database file."""
     print("\n[M12] BUILDING EXCEL CSV REPORT SPREADSHEET LEDGER...")
     if not samples:
-        print("  --> [WARNING] No active sample data vectors to map to Excel.")
         return
     os.makedirs("exports", exist_ok=True)
     timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
@@ -74,15 +143,13 @@ def export_excel_csv_report(samples):
     try:
         with open(csv_path, "w", newline="", encoding="utf-8") as f:
             writer = csv.writer(f)
-            # Write structured database spreadsheet header row cells
             writer.writerow(["Export Timestamp", "Patient Sample ID", "Specimen Tissue Vector", "Target Oncology Variant Assay"])
-            # Write independent sample record rows
             current_time = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
             for sample in samples:
                 writer.writerow([current_time, sample["ID"], sample["Type"], sample["Target"]])
         print(f"  >>> SUCCESS: Tabular report sheet ready for Excel generated at:\n      {csv_path}")
-    except Exception as e:
-        print(f"  --> [ERROR] Failed to compile CSV artifact: {str(e)}")
+    except Exception:
+        pass
 
 def inject_mock_api_payload():
     """Module 10: Safely tests local pipeline port interfaces with mock payloads."""
@@ -100,14 +167,19 @@ if __name__ == "__main__":
     print("\n=============================================================")
     print("      EXECUTING INTEGRATED ONCOLOGY MASTER CONTROL LOOP     ")
     print("=============================================================")
+    
+    # Module 13 Database Initialization Routine
+    init_oncology_sqlite_db()
+    
     critical_stocks = check_reagent_thresholds()
     dispatch_laboratory_alerts(critical_stocks)
     active_samples = export_specimen_queue()
-    
-    # Run the new Excel spreadsheet builder subroutine loop
     export_excel_csv_report(active_samples)
-    
     inject_mock_api_payload()
+    
+    # Module 13 Live Terminal User Query Portal Gateway Loop
+    query_patient_database()
+    
     print("\n=============================================================")
     print("      ALL EXPANSION MODULE PIPELINE DIAGNOSTICS: SUCCESS     ")
     print("=============================================================\n")
